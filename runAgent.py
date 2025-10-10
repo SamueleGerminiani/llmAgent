@@ -38,7 +38,7 @@ def main():
         for path in paths:
             if not os.path.exists(path):
                 sys.stderr.write(f"Error: enclosed file not found: {path}\n")
-                exit(1)
+                sys.exit(1)
             with open(path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
                 enclosed_contents.append({"path": path, "content": content})

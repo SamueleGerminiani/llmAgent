@@ -27,9 +27,9 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
     rm get-pip.py
 
 # Clone and install
+ARG CACHE_DATE=not_a_date
 RUN git clone https://github.com/SamueleGerminiani/llmAgent.git /llmAgent
 WORKDIR /llmAgent
-RUN git pull
 
 RUN bash install_deps.sh || true
 
