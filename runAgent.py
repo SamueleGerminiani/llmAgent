@@ -73,6 +73,10 @@ def main():
             contents=combined_prompt
         )
         output = response.text
+        print("✅ Query successful.")
+        print("--- Output Start ---")
+        print(output)
+        print("--- Output End ---")
     except Exception as e:
         sys.stderr.write(f"Error while querying Gemini: {e}\n")
         sys.exit(1)
