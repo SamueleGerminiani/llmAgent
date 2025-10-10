@@ -37,8 +37,8 @@ def main():
         paths = [p.strip() for p in args.input.split(",") if p.strip()]
         for path in paths:
             if not os.path.exists(path):
-                sys.stderr.write(f"Warning: enclosed file not found: {path}\n")
-                continue
+                sys.stderr.write(f"Error: enclosed file not found: {path}\n")
+                exit(1)
             with open(path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
                 enclosed_contents.append({"path": path, "content": content})

@@ -29,6 +29,7 @@ RUN wget https://bootstrap.pypa.io/get-pip.py && \
 # Clone and install
 RUN git clone https://github.com/SamueleGerminiani/llmAgent.git /llmAgent
 WORKDIR /llmAgent
+RUN git pull
 
 RUN bash install_deps.sh || true
 
