@@ -29,12 +29,18 @@ def main():
     parser.add_argument(
         "--enclose-files-as-prompt",
         required=False,
+        nargs='?',
+        const="",
+        default="",
         help="Comma-separated list of text files to read and append to the prompt",
     )
     # Option 2: Upload file using API
     parser.add_argument(
         "--enclose-files",
         required=False,
+        nargs='?',
+        const="",
+        default="",
         help="Comma-separated list of files (PDF, Images, etc.) to upload via File API",
     )
 
