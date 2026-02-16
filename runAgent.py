@@ -20,10 +20,18 @@ def main():
         "--agent-setup", required=True, help="Path to instructions"
     )
     parser.add_argument(
-        "--enclose-files-as-prompt", default="", help="Text files to append"
+        "--enclose-files-as-prompt",
+        default="",
+        nargs="?",  # This makes the value optional
+        const="",
+        help="Text files to append",
     )
     parser.add_argument(
-        "--enclose-files", default="", help="Files to upload (PDF/Images)"
+        "--enclose-files",
+        default="",
+        nargs="?",  # This makes the value optional
+        const="",
+        help="Files to upload (PDF/Images)",
     )
     parser.add_argument(
         "--print-prompt-only", action="store_true", help="Debug mode"
