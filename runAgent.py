@@ -14,9 +14,17 @@ MAX_UPLOAD_FILES = 10
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run an agent on Gemini 2.5 Flash with enclosed files."
+        description="Run an agent on Gemini models with enclosed files."
     )
     parser.add_argument("--api-key", required=False, help="Google API key")
+
+    # NEW ARGUMENT FOR MODEL SELECTION
+    parser.add_argument(
+        "--model",
+        default="gemini-3.8-flash",
+        help="The Gemini model to use (default: gemini-3.8-flash)"
+    )
+
     parser.add_argument(
         "--agent-setup", required=True, help="Path to instructions"
     )
@@ -55,11 +63,17 @@ def main():
 
     args = parser.parse_args()
 
-    # 1. Load API Key
+    # 1. Load API Key (with interactive fallback)
     api_key = args.api_key or os.environ.get("GOOGLE_API_KEY")
     if not api_key:
-        sys.stderr.write("Error: API Key not found.\n")
-        sys.exit(1)
+        try:
+            api_key = input("🔑 Google API Key not found. Please paste it here: ").strip()
+        except KeyboardInterrupt:
+            sys.exit(1)
+
+        if not api_key:
+            sys.stderr.write("Error: API Key is required.\n")
+            sys.exit(1)
 
     client = genai.Client(api_key=api_key)
 
@@ -131,10 +145,10 @@ def main():
         sys.exit(0)
 
     try:
-        print("🔍 Validating token count...")
-        # Using gemini-2.0-flash as the stable ID for 2.5 flash behaviors
+        print(f"🔍 Validating token count for {args.model}...")
+        # Use dynamic model argument for counting tokens
         count = client.models.count_tokens(
-            model="gemini-2.5-flash", contents=generation_contents
+            model=args.model, contents=generation_contents
         )
         total_tokens = count.total_tokens
 
@@ -154,7 +168,7 @@ def main():
         )
 
     # 6. Execute Query with Retry Logic
-    print(f"⏳ Querying Gemini 2.5 Flash (Temp: {args.temperature}, Seed: {args.seed})...")
+    print(f"⏳ Querying {args.model} (Temp: {args.temperature}, Seed: {args.seed})...")
 
     # Configure Generation settings (Temperature & Seed)
     config_kwargs = {"temperature": args.temperature}
@@ -167,8 +181,9 @@ def main():
 
     while True:
         try:
+            # Use dynamic model argument for generating content
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model=args.model,
                 contents=generation_contents,
                 config=generation_config
             )
