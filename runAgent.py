@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 from google import genai
+from google.genai import types
 import sys
 import os
 import time
@@ -37,6 +38,21 @@ def main():
         "--print-prompt-only", action="store_true", help="Debug mode"
     )
     parser.add_argument("--dump-to", required=True, help="Output file path")
+
+    # NEW ARGUMENTS FOR TEMPERATURE AND SEED
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.7,
+        help="Temperature for the LLM (default: 0.7)"
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Integer seed for reproducible generation"
+    )
+
     args = parser.parse_args()
 
     # 1. Load API Key
@@ -139,9 +155,19 @@ def main():
 
     # 6. Execute Query
     try:
-        print("⏳ Querying Gemini 2.5 Flash...")
+        print(f"⏳ Querying Gemini 2.5 Flash (Temp: {args.temperature}, Seed: {args.seed})...")
+
+        # Configure Generation settings (Temperature & Seed)
+        config_kwargs = {"temperature": args.temperature}
+        if args.seed is not None:
+            config_kwargs["seed"] = args.seed
+
+        generation_config = types.GenerateContentConfig(**config_kwargs)
+
         response = client.models.generate_content(
-            model="gemini-2.5-flash", contents=generation_contents
+            model="gemini-2.5-flash",
+            contents=generation_contents,
+            config=generation_config
         )
         print("✅ Query successful.")
         with open(args.dump_to, "w", encoding="utf-8") as f:
