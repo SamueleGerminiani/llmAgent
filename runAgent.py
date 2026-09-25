@@ -21,8 +21,8 @@ def main():
     # NEW ARGUMENT FOR MODEL SELECTION
     parser.add_argument(
         "--model",
-        default="gemini-3.8-flash",
-        help="The Gemini model to use (default: gemini-3.8-flash)"
+        default="gemini-2.5-flash",
+        help="The Gemini model to use (default: gemini-2.5-flash)"
     )
 
     parser.add_argument(
