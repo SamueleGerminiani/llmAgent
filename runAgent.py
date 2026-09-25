@@ -153,29 +153,43 @@ def main():
             f"Warning: Token validation failed ({e}). Proceeding carefully...\n"
         )
 
-    # 6. Execute Query
-    try:
-        print(f"⏳ Querying Gemini 2.5 Flash (Temp: {args.temperature}, Seed: {args.seed})...")
+    # 6. Execute Query with Retry Logic
+    print(f"⏳ Querying Gemini 2.5 Flash (Temp: {args.temperature}, Seed: {args.seed})...")
 
-        # Configure Generation settings (Temperature & Seed)
-        config_kwargs = {"temperature": args.temperature}
-        if args.seed is not None:
-            config_kwargs["seed"] = args.seed
+    # Configure Generation settings (Temperature & Seed)
+    config_kwargs = {"temperature": args.temperature}
+    if args.seed is not None:
+        config_kwargs["seed"] = args.seed
 
-        generation_config = types.GenerateContentConfig(**config_kwargs)
+    generation_config = types.GenerateContentConfig(**config_kwargs)
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=generation_contents,
-            config=generation_config
-        )
-        print("✅ Query successful.")
-        with open(args.dump_to, "w", encoding="utf-8") as f:
-            f.write(response.text)
-        print(f"✅ Output written to {args.dump_to}")
-    except Exception as e:
-        sys.stderr.write(f"❌ Error during generation: {e}\n")
-        sys.exit(1)
+    retry_delay = 10  # Start with a 10-second delay
+
+    while True:
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=generation_contents,
+                config=generation_config
+            )
+            print("✅ Query successful.")
+            with open(args.dump_to, "w", encoding="utf-8") as f:
+                f.write(response.text)
+            print(f"✅ Output written to {args.dump_to}")
+            break  # Exit the while loop if generation was successful
+
+        except Exception as e:
+            error_message = str(e)
+            # Check specifically for the 503 UNAVAILABLE status
+            if "503" in error_message and "UNAVAILABLE" in error_message:
+                print(f"⚠️ Model experiencing high demand (503). Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                # Optional: Increase the delay slightly each time to prevent hammering the API (capped at 60s)
+                retry_delay = min(retry_delay + 5, 60)
+            else:
+                # If it's a different error (e.g., 400 Bad Request), fail immediately
+                sys.stderr.write(f"❌ Error during generation: {e}\n")
+                sys.exit(1)
 
 
 if __name__ == "__main__":
